@@ -1,45 +1,44 @@
 #include <iostream>
-#include <string>
-
 #include <algorithm>
 #include <vector>
-#include <map>
-#include <set>
-#include <stack>
-#include <queue>
 #include <limits>
 
 using namespace std;
 
-int max_count = 0;
-
-int getLongestPath(vector< vector<int> > &A, int x, int y, int max_val, int count) {
+int getLongestPath(int x, int y, int max_val, vector< vector<int> > &A, vector< vector<int> > &max_matrix) {
 	if (x >= A.size() || y >= A[0].size())
-		return count;
+		return 0;
 
-	if (A[x][y] > max_val) {
-		++count;
-		max_val = A[x][y];
-		//cout << "( " << x << ", " << y << "): " << A[x][y] << "=> ";
-	}
+	if (A[x][y] < max_val)
+		return 0;
+
+	max_val = A[x][y];
+
+	int &max_length = max_matrix[x][y];
+	if (max_length != INT_MIN)
+		return max_length;
 
 	// Move to X-axis and Y-axis
-	int max_X = getLongestPath(A, x + 1, y, max_val, count);
-	int max_Y = getLongestPath(A, x, y + 1, max_val, count);
+	int max_X = getLongestPath(x + 1, y, max_val, A, max_matrix);
+	int max_Y = getLongestPath(x, y + 1, max_val, A, max_matrix);
+	max_length = max(max_X, max_Y);
 
-	return max(max_X, max_Y);
+	return 1 + max_length;
 }
 
 int solution(vector< vector<int> > &A) {
+	// Make cache matrix for dynamic programming
+	vector< vector<int>> max_matrix(A.size(), vector<int>(A[0].size(), INT_MIN));
+	int max_longest = 0;
+
 	for (int x = 0; x < A.size(); ++x) {
 		for (int y = 0; y < A[0].size(); ++y) {
-			//cout << "( " << x << ", " << y << "): " << A[x][y] << "=> ";
-			int longest = getLongestPath(A, x, y, A[x][y], 1);
-			max_count = max(max_count, longest);
-			//cout << "max: " << longest << endl;
+			int longest = getLongestPath(x, y, A[x][y], A, max_matrix);
+			max_longest = max(max_longest, longest);
 		}
 	}
-	return max_count;
+
+	return max_longest;
 }
 
 void main() {
